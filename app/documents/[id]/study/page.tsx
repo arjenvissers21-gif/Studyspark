@@ -1,2 +1,5 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import {prisma} from "../../../../lib/prisma";import {getGuestUser} from "../../../../lib/guest";import StudyClient from "../../../../components/StudyClient";
 export default async function Page({params}:{params:Promise<{id:string}>}){const u=await getGuestUser();const{id}=await params;const d=await prisma.document.findFirst({where:{id,userId:u.id},include:{flashcards:true,quizzes:{include:{questions:true}}}});if(!d)return <main className="container page"><h1>Niet gevonden</h1></main>;return <main className="container page"><h1>Study Mode</h1><p className="muted">{d.title} · {d.flashcards.length} flashcards</p><StudyClient documentId={d.id} cards={d.flashcards.map(x=>({id:x.id,q:x.question,a:x.answer}))}/></main>}
