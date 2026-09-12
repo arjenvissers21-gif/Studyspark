@@ -17,11 +17,11 @@
     "docx": "^9.5.1",
     "next": "^15.5.0",
     "next-auth": "^5.0.0-beta.29",
-    "openai": "^5.12.2",
+    "openai": "5.23.2",
     "pdf-parse": "^1.1.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "zod": "^3.25.76"
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
