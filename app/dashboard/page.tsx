@@ -1,2 +1,60 @@
-import Link from "next/link";import {getCurrentUser} from "../../lib/session";import {prisma} from "../../lib/prisma";
-export default async function Page(){const u=await getCurrentUser();const docs=u?await prisma.document.findMany({where:{userId:u.id},orderBy:{createdAt:"desc"},take:8}):[];const p=u?.progress;return <main className="container page"><div className="row"><div><h1>Hallo{u?.name?`, ${u.name}`:""} 👋</h1><p className="muted">Klaar voor je volgende studiesessie?</p></div><Link className="btn primary" href="/upload">+ Nieuw materiaal</Link></div><section className="grid g3" style={{marginTop:24}}><div className="card"><div className="muted">Kaarten herhaald</div><div className="stat">{p?.cardsReviewed||0}</div></div><div className="card"><div className="muted">Quizzen voltooid</div><div className="stat">{p?.quizzesDone||0}</div></div><div className="card"><div className="muted">Streak</div><div className="stat">{p?.streak||0} dagen</div></div></section><div className="card" style={{marginTop:16}}><h2>Recente documenten</h2>{docs.length?docs.map(d=><div className="row" style={{padding:"13px 0",borderBottom:"1px solid #eee"}} key={d.id}><span><b>{d.title}</b><br/><small className="muted">{d.sourceType}</small></span><Link className="btn soft" href={"/documents/"+d.id}>Open</Link></div>):<p className="muted">Nog geen documenten. Upload je eerste aantekeningen.</p>}</div></main>}
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "../../lib/session";
+import { prisma } from "../../lib/prisma";
+
+export default async function Page() {
+  const u = await getCurrentUser();
+  if (!u) redirect("/login");
+
+  const docs = await prisma.document.findMany({
+    where: { userId: u.id },
+    orderBy: { createdAt: "desc" },
+    take: 8,
+    include: { _count: { select: { flashcards: true, quizzes: true } } },
+  });
+  const p = u.progress;
+
+  return (
+    <main className="container page">
+      <div className="row">
+        <div>
+          <h1>Hallo{u.name ? `, ${u.name}` : ""} 👋</h1>
+          <p className="muted">Hier staan al je samenvattingen, flashcards en quizzen.</p>
+        </div>
+        <Link className="btn primary" href="/upload">+ Nieuw materiaal</Link>
+      </div>
+
+      <section className="grid g3" style={{ marginTop: 24 }}>
+        <div className="card"><div className="muted">Kaarten herhaald</div><div className="stat">{p?.cardsReviewed || 0}</div></div>
+        <div className="card"><div className="muted">Quizzen voltooid</div><div className="stat">{p?.quizzesDone || 0}</div></div>
+        <div className="card"><div className="muted">Streak</div><div className="stat">{p?.streak || 0} dagen</div></div>
+      </section>
+
+      <div className="row" style={{ marginTop: 28 }}>
+        <h2>Mijn studiemateriaal</h2>
+        <Link className="btn soft" href="/library">Alles bekijken</Link>
+      </div>
+
+      <div className="grid g2" style={{ marginTop: 12 }}>
+        {docs.length ? docs.map(d => (
+          <div className="card" key={d.id}>
+            <span className="pill">{d.sourceType}</span>
+            <h2>{d.title}</h2>
+            <p className="muted">{d._count.flashcards} flashcards · {d._count.quizzes} quiz</p>
+            <div className="row" style={{ marginTop: 12 }}>
+              <Link className="btn primary" href={`/documents/${d.id}`}>Open</Link>
+              <Link className="btn soft" href={`/documents/${d.id}/flashcards`}>Flashcards</Link>
+            </div>
+          </div>
+        )) : (
+          <div className="card">
+            <h2>Je eerste leerstof</h2>
+            <p className="muted">Upload een PDF, foto of tekst. StudySpark maakt daarna automatisch je samenvatting, flashcards en quiz.</p>
+            <Link className="btn primary" href="/upload">Mijn leerstof toevoegen</Link>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

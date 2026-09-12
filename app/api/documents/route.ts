@@ -5,13 +5,12 @@ import { generateStudyPack } from "../../../lib/ai";
 import { getCurrentUser } from "../../../lib/session";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Log eerst in." }, { status: 401 });
-    }
+    if (!user) return NextResponse.json({ error: "Log eerst in." }, { status: 401 });
 
     const form = await req.formData();
     const file = form.get("file");
@@ -26,12 +25,8 @@ export async function POST(req: Request) {
       sourceType = extracted.type;
     }
 
-    if (text.length < 20) {
-      return NextResponse.json(
-        { error: "Voeg minstens 20 tekens leerstof toe." },
-        { status: 400 },
-      );
-    }
+    text = text.replace(/\u0000/g, "").trim();
+    if (text.length < 20) return NextResponse.json({ error: "Ik kon niet genoeg leerstof uit je bestand halen. Gebruik een duidelijkere PDF/foto of plak de tekst rechtstreeks." }, { status: 400 });
 
     const pack = await generateStudyPack(text);
 
@@ -43,25 +38,16 @@ export async function POST(req: Request) {
         rawText: text,
         summary: pack.summary,
         sections: {
-          create: pack.sections.map((section, index) => ({
-            title: section.title,
-            content: section.content,
-            order: index,
-          })),
+          create: pack.sections.map((section, index) => ({ title: section.title, content: section.content, order: index })),
         },
         flashcards: {
-          create: pack.flashcards.map((card) => ({
-            question: card.question,
-            answer: card.answer,
-            difficulty: card.difficulty,
-            dueAt: new Date(),
-          })),
+          create: pack.flashcards.map(card => ({ question: card.question, answer: card.answer, difficulty: card.difficulty, dueAt: new Date() })),
         },
         quizzes: {
           create: {
             title: pack.quiz.title,
             questions: {
-              create: pack.quiz.questions.map((question) => ({
+              create: pack.quiz.questions.map(question => ({
                 type: question.type,
                 question: question.question,
                 options: question.options,
@@ -77,7 +63,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ id: document.id });
   } catch (error) {
-    console.error(error);
+    console.error("StudySpark document error", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Verwerking mislukt." },
       { status: 500 },
