@@ -1,11 +1,10 @@
 import { prisma } from "../../../lib/prisma";
-import { getCurrentUser } from "../../../lib/session";
+import { getGuestUser } from "../../../lib/guest";
 import Link from "next/link";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const u = await getCurrentUser();
+  const u = await getGuestUser();
   const { id } = await params;
-  if (!u) return <main className="container page"><h1>Log in om dit document te bekijken.</h1><Link className="btn primary" href="/login">Inloggen</Link></main>;
 
   const d = await prisma.document.findFirst({
     where: { id, userId: u.id },

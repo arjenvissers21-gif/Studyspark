@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { makeDocx } from "../../../../../lib/word";
-import { getCurrentUser } from "../../../../../lib/session";
+import { getGuestUser } from "../../../../../lib/guest";
 
 export const runtime = "nodejs";
 
@@ -9,10 +9,7 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await getCurrentUser();
-  if (!user) {
-    return NextResponse.json({ error: "Log eerst in." }, { status: 401 });
-  }
+  const user = await getGuestUser();
 
   const { id } = await params;
   const document = await prisma.document.findFirst({

@@ -2,15 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 import { extractText } from "../../../lib/parse";
 import { generateStudyPack } from "../../../lib/ai";
-import { getCurrentUser } from "../../../lib/session";
+import { getGuestUser } from "../../../lib/guest";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    const user = await getCurrentUser();
-    if (!user) return NextResponse.json({ error: "Log eerst in." }, { status: 401 });
+    const user = await getGuestUser();
 
     const form = await req.formData();
     const file = form.get("file");

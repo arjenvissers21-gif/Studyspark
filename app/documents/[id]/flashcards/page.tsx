@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { prisma } from "../../../../lib/prisma";
-import { getCurrentUser } from "../../../../lib/session";
+import { getGuestUser } from "../../../../lib/guest";
 import StudyClient from "../../../../components/StudyClient";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const u = await getCurrentUser();
-  if (!u) return <main className="container page"><h1>Log in om te studeren.</h1><Link className="btn primary" href="/login">Inloggen</Link></main>;
+  const u = await getGuestUser();
   const { id } = await params;
   const d = await prisma.document.findFirst({ where: { id, userId: u.id }, include: { flashcards: true } });
   if (!d) return <main className="container page"><h1>Niet gevonden</h1></main>;
