@@ -4,11 +4,15 @@ import { makeDocx } from "../../../../../lib/word";
 import { getGuestUser } from "../../../../../lib/guest";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (!process.env.DATABASE_URL?.trim()) {
+    return NextResponse.json({ error: "DATABASE_URL ontbreekt in Vercel." }, { status: 503 });
+  }
   const user = await getGuestUser();
 
   const { id } = await params;

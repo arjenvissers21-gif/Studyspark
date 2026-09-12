@@ -6,9 +6,16 @@ import { getGuestUser } from "../../../lib/guest";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    if (!process.env.DATABASE_URL?.trim()) {
+      return NextResponse.json(
+        { error: "DATABASE_URL ontbreekt in Vercel. Voeg je PostgreSQL DATABASE_URL toe via Project Settings → Environment Variables en redeploy daarna." },
+        { status: 503 },
+      );
+    }
     const user = await getGuestUser();
 
     const form = await req.formData();
