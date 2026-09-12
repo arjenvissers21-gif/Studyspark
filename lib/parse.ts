@@ -1,4 +1,4 @@
-import pdf from "pdf-parse";
+import pdf from "pdf-parse/lib/pdf-parse.js";
 import { ocrImage } from "./ai";
 const MAX_BYTES=10*1024*1024;
 export async function extractText(file:File){
