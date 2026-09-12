@@ -1,0 +1,1 @@
+import AuthForm from "../../components/AuthForm";export default function Page(){return <main className="container page"><div className="card" style={{maxWidth:460,margin:"40px auto"}}><h1>Account maken</h1><AuthForm mode="register"/></div></main>}

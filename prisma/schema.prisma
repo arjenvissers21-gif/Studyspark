@@ -1,0 +1,50 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+model User {
+ id String @id @default(cuid()); name String?; email String? @unique; passwordHash String?
+ documents Document[]; sessions StudySession[]; progress Progress?
+ createdAt DateTime @default(now()); updatedAt DateTime @updatedAt
+}
+model Document {
+ id String @id @default(cuid()); userId String; title String; sourceType String
+ rawText String @db.Text; summary String? @db.Text; status String @default("READY")
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ sections DocumentSection[]; flashcards Flashcard[]; quizzes Quiz[]; studySessions StudySession[]
+ createdAt DateTime @default(now()); updatedAt DateTime @updatedAt
+ @@index([userId,createdAt])
+}
+model DocumentSection {
+ id String @id @default(cuid()); documentId String; title String; content String @db.Text; order Int
+ document Document @relation(fields:[documentId],references:[id],onDelete:Cascade)
+}
+model Flashcard {
+ id String @id @default(cuid()); documentId String; question String; answer String @db.Text
+ difficulty Int @default(1); interval Int @default(1); dueAt DateTime @default(now()); status String @default("NEW")
+ document Document @relation(fields:[documentId],references:[id],onDelete:Cascade)
+ @@index([documentId,dueAt])
+}
+model Quiz {
+ id String @id @default(cuid()); documentId String; title String
+ document Document @relation(fields:[documentId],references:[id],onDelete:Cascade)
+ questions QuizQuestion[]; createdAt DateTime @default(now())
+}
+model QuizQuestion {
+ id String @id @default(cuid()); quizId String; type String; question String @db.Text
+ options Json?; answer String @db.Text; explanation String? @db.Text; topic String?
+ quiz Quiz @relation(fields:[quizId],references:[id],onDelete:Cascade)
+}
+model StudySession {
+ id String @id @default(cuid()); userId String; documentId String; startedAt DateTime @default(now()); endedAt DateTime?
+ score Float?; user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ document Document @relation(fields:[documentId],references:[id],onDelete:Cascade); results StudyResult[]
+}
+model StudyResult {
+ id String @id @default(cuid()); sessionId String; itemType String; itemId String; correct Boolean; topic String?
+ session StudySession @relation(fields:[sessionId],references:[id],onDelete:Cascade)
+}
+model Progress {
+ id String @id @default(cuid()); userId String @unique; cardsReviewed Int @default(0); quizzesDone Int @default(0)
+ studyMinutes Int @default(0); streak Int @default(0); weakTopics Json?
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+}
