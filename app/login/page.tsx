@@ -1,1 +1,2 @@
-import AuthForm from "../../components/AuthForm";export default function Page(){return <main className="container page"><div className="card" style={{maxWidth:460,margin:"40px auto"}}><h1>Inloggen</h1><AuthForm mode="login"/></div></main>}
+import { redirect } from "next/navigation";
+export default function LoginPage() { redirect("/upload"); }
