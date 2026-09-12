@@ -34,7 +34,7 @@ export async function GET(
     flashcards: document.flashcards,
   });
 
-  return new NextResponse(buffer as BodyInit, {
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
